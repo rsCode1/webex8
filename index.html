@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Browser</title>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script defer src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="inc/loading.css" />
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function ImageBrowserApp() {
+      const [images, setImages] = useState([]);
+      const [selectedImage, setSelectedImage] = useState(null);
+
+      useEffect(() => {
+        const LIMIT = 15;
+        fetch(`https://picsum.photos/v2/list?limit=${LIMIT}`)
+          .then(response => response.json())
+          .then(data => {
+            const formattedImages = data.map(item => ({
+              thumbnail: `https://picsum.photos/100/100?image=${item.id}`,
+              full: `https://picsum.photos/300/300?image=${item.id}`,
+            }));
+            setImages(formattedImages);
+          })
+          .catch(error => console.error('Error fetching images:', error));
+      }, []); // Empty dependency array means this effect runs once on mount
+
+      const handleSelectImage = imageUrl => {
+        setSelectedImage(imageUrl);
+      };
+
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <h1 className="text-center">Image Browser</h1>
+          <div className="thumbnail-container flex flex-wrap justify-center items-center gap-4">
+            {images.map(image => (
+              <img
+                key={image.thumbnail}
+                src={image.thumbnail}
+                className="thumbnail cursor-pointer"
+                alt="Thumbnail"
+                onClick={() => handleSelectImage(image.full)}
+              />
+            ))}
+          </div>
+          {selectedImage && (
+            <div className="selected-image-container flex flex-col items-center justify-center mt-8">
+              <h2>Selected Image</h2>
+              <img src={selectedImage} alt="Selected" className="max-w-full h-auto" />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<ImageBrowserApp />, document.getElementById('app'));
+  </script>
+</body>
+
+</html>
